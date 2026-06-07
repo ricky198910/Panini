@@ -96,6 +96,8 @@
   .sticker-btn:active { transform: scale(0.88); }
   .sticker-btn.state-1 { background: #14532d; border-color: #16a34a; color: #4ade80; }
   .sticker-btn.state-2 { background: #7c2d12; border-color: #ea580c; color: #fb923c; }
+  .sticker-btn.state-3 { background: linear-gradient(135deg, #14532d 50%, #7c2d12 50%); border-color: #a855f7; color: #fff; }
+  .badge-purple { background: #4c1d95; color: #c4b5fd; }
   .card-legend { display: flex; gap: 12px; font-size: 10px; color: #475569; }
   #empty-msg { text-align: center; color: #475569; padding: 40px; display: none; }
 
@@ -177,6 +179,7 @@
   <span style="color:#64748b">⬛ Falta</span>
   <span style="color:#4ade80">→ 🟩 Tengo</span>
   <span style="color:#fb923c">→ 🟧 Repetida</span>
+  <span style="color:#c4b5fd">→ 🟪 Tengo+Rep</span>
   <span style="color:#64748b">→ ⬛ Falta</span>
 </div>
 
@@ -228,7 +231,7 @@ function saveData() {
 
 // ── STICKER TAP ───────────────────────────────────
 function tap(team, num) {
-  data[team][num] = (data[team][num]+1) % 3;
+  data[team][num] = (data[team][num]+1) % 4;
   saveData();
   updateCard(team);
   updateTopBar();
@@ -236,18 +239,19 @@ function tap(team, num) {
 }
 
 function updateCard(team) {
-  let tengo=0, rep=0, falta=0;
-  NUMS.forEach(n => { const s=data[team][n]; if(s===1)tengo++; else if(s===2)rep++; else falta++; });
+  let tengo=0, rep=0, falta=0, tengorep=0;
+  NUMS.forEach(n => { const s=data[team][n]; if(s===1)tengo++; else if(s===2)rep++; else if(s===3)tengorep++; else falta++; });
   const bc = document.getElementById('badges-'+team);
   if (bc) {
     let h='';
-    if(tengo>0) h+=`<span class="badge badge-green">✓ ${tengo}</span>`;
-    if(rep>0)   h+=`<span class="badge badge-orange">×${rep} rep</span>`;
-    if(falta>0) h+=`<span class="badge badge-gray">${falta} falta</span>`;
+    if(tengo>0)    h+=`<span class="badge badge-green">✓ ${tengo}</span>`;
+    if(rep>0)      h+=`<span class="badge badge-orange">×${rep} rep</span>`;
+    if(tengorep>0) h+=`<span class="badge badge-purple">✓+×${tengorep}</span>`;
+    if(falta>0)    h+=`<span class="badge badge-gray">${falta} falta</span>`;
     bc.innerHTML=h;
   }
   const bar=document.getElementById('bar-'+team);
-  if(bar) bar.style.width=`${((tengo+rep)/20)*100}%`;
+  if(bar) bar.style.width=`${((tengo+rep+tengorep)/20)*100}%`;
   NUMS.forEach(n => {
     const btn=document.getElementById(`s-${team}-${n}`);
     if(btn) btn.className='sticker-btn state-'+data[team][n];
@@ -255,11 +259,11 @@ function updateCard(team) {
 }
 
 function updateTopBar() {
-  let tengo=0,rep=0,falta=0;
-  TEAMS.forEach(t=>NUMS.forEach(n=>{const s=data[t][n];if(s===1)tengo++;else if(s===2)rep++;else falta++;}));
+  let tengo=0,rep=0,falta=0,tengorep=0;
+  TEAMS.forEach(t=>NUMS.forEach(n=>{const s=data[t][n];if(s===1)tengo++;else if(s===2)rep++;else if(s===3)tengorep++;else falta++;}));
   const total=TEAMS.length*20;
-  document.getElementById('global-stats').textContent=`${tengo+rep}/${total} stickers • ${rep} repetidas • ${falta} faltan`;
-  document.getElementById('global-bar').style.width=`${((tengo+rep)/total)*100}%`;
+  document.getElementById('global-stats').textContent=`${tengo+rep+tengorep}/${total} stickers • ${rep+tengorep} repetidas • ${falta} faltan`;
+  document.getElementById('global-bar').style.width=`${((tengo+rep+tengorep)/total)*100}%`;
 }
 
 // ── FILTER & RENDER ───────────────────────────────
@@ -310,12 +314,13 @@ function renderCards() {
 function buildCard(team) {
   const div=document.createElement('div');
   div.className='team-card'; div.dataset.team=team;
-  let tengo=0,rep=0,falta=0;
-  NUMS.forEach(n=>{const s=data[team][n];if(s===1)tengo++;else if(s===2)rep++;else falta++;});
+  let tengo=0,rep=0,falta=0,tengorep=0;
+  NUMS.forEach(n=>{const s=data[team][n];if(s===1)tengo++;else if(s===2)rep++;else if(s===3)tengorep++;else falta++;});
   let badges='';
-  if(tengo>0) badges+=`<span class="badge badge-green">✓ ${tengo}</span>`;
-  if(rep>0)   badges+=`<span class="badge badge-orange">×${rep} rep</span>`;
-  if(falta>0) badges+=`<span class="badge badge-gray">${falta} falta</span>`;
+  if(tengo>0)    badges+=`<span class="badge badge-green">✓ ${tengo}</span>`;
+  if(rep>0)      badges+=`<span class="badge badge-orange">×${rep} rep</span>`;
+  if(tengorep>0) badges+=`<span class="badge badge-purple">✓+×${tengorep}</span>`;
+  if(falta>0)    badges+=`<span class="badge badge-gray">${falta} falta</span>`;
   let btns='';
   NUMS.forEach(n=>{btns+=`<button id="s-${team}-${n}" class="sticker-btn state-${data[team][n]}" onclick="tap('${team}',${n})">${n}</button>`;});
   div.innerHTML=`
@@ -323,9 +328,9 @@ function buildCard(team) {
       <div class="team-name-big">${team}</div>
       <div class="card-badges" id="badges-${team}">${badges}</div>
     </div>
-    <div class="card-bar-wrap"><div class="card-bar" id="bar-${team}" style="width:${((tengo+rep)/20)*100}%"></div></div>
+    <div class="card-bar-wrap"><div class="card-bar" id="bar-${team}" style="width:${((tengo+rep+tengorep)/20)*100}%"></div></div>
     <div class="sticker-grid">${btns}</div>
-    <div class="card-legend"><span>⬛ Falta</span><span style="color:#4ade80">🟩 Tengo</span><span style="color:#fb923c">🟧 Repetida</span></div>`;
+    <div class="card-legend"><span>⬛ Falta</span><span style="color:#4ade80">🟩 Tengo</span><span style="color:#fb923c">🟧 Repetida</span><span style="color:#c4b5fd">🟪 Tengo+Rep</span></div>`;
   return div;
 }
 
@@ -339,7 +344,7 @@ function togglePanel(panelId, btnId) {
 }
 
 function renderSummary() {
-  const rep=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===2)})).filter(x=>x.nums.length>0);
+  const rep=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===2||data[t][n]===3)})).filter(x=>x.nums.length>0);
   const falt=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===0)})).filter(x=>x.nums.length>0);
   let h=`<div class="summary-section-title" style="color:#fb923c">🔁 REPETIDAS para intercambiar:</div>`;
   if(!rep.length) h+=`<div class="summary-row">Ninguna aún</div>`;
@@ -387,7 +392,7 @@ function importJSON(e) {
 
 // ── BACKUP: CÓDIGO TEXTO ──────────────────────────
 function encodeData() {
-  // Compact: "FCW:0112001020..." per team, 0=falta,1=tengo,2=rep
+  // Compact: "FCW:0112001020..." per team, 0=falta,1=tengo,2=rep,3=tengo+rep
   return TEAMS.map(t=>t+':'+NUMS.map(n=>data[t][n]).join('')).join('|');
 }
 
@@ -419,7 +424,10 @@ function openPasteModal() { document.getElementById('modal-overlay').classList.a
 function closeModal()      { document.getElementById('modal-overlay').classList.remove('visible'); document.getElementById('modal-input').value=''; }
 
 function pasteCode() {
-  const str=document.getElementById('modal-input').value;
+  let str=document.getElementById('modal-input').value;
+  // Fix URL-encoding added by WhatsApp/messaging apps
+  try { str = decodeURIComponent(str); } catch {}
+  str = str.replace(/%7C/gi,'|').replace(/%3A/gi,':').replace(/%0A/gi,'').trim();
   if(!str.trim()){showStatus('❌ Pega un código primero');closeModal();return;}
   try {
     const parsed=decodeData(str);
