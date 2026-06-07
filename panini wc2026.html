@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Panini WC26">
+<title>⚽ Panini WC 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: #020817; color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; padding-bottom: 80px; }
+
+  #topbar {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    border-bottom: 1px solid #1e293b;
+    padding: 14px 14px 10px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  #topbar-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  #app-title { font-family: Impact, 'Arial Black', sans-serif; font-size: 20px; letter-spacing: 3px; line-height: 1; }
+  #global-stats { font-size: 11px; color: #64748b; margin-top: 3px; }
+  #top-buttons { display: flex; gap: 6px; }
+  .top-btn {
+    background: #1e293b; border: 1px solid #334155; color: #f8fafc;
+    border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; font-weight: 600;
+  }
+  .top-btn.active { background: #1d4ed8; }
+  #global-bar-wrap { background: #1e293b; border-radius: 99px; height: 6px; margin-bottom: 10px; }
+  #global-bar { background: linear-gradient(90deg, #3b82f6, #22c55e); height: 100%; border-radius: 99px; width: 0%; transition: width 0.4s; }
+  #search-row { display: flex; gap: 8px; }
+  #search { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; padding: 7px 12px; font-size: 13px; outline: none; }
+  .filter-btn {
+    background: #1e293b; border: 1px solid #334155; color: #94a3b8;
+    border-radius: 8px; padding: 6px 9px; font-size: 11px; cursor: pointer; font-weight: 600; white-space: nowrap;
+  }
+  .filter-btn.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+
+  /* PANEL GENERICO */
+  .panel {
+    margin: 12px 12px 0;
+    background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px; display: none;
+  }
+  .panel.visible { display: block; }
+  .panel-title { font-weight: 700; font-size: 14px; margin-bottom: 12px; }
+
+  /* BACKUP PANEL */
+  #backup-panel textarea {
+    width: 100%; background: #0a0f1e; border: 1px solid #334155; border-radius: 8px;
+    color: #94a3b8; font-size: 11px; padding: 10px; font-family: monospace;
+    resize: none; height: 90px; outline: none; margin-bottom: 8px;
+  }
+  .backup-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .backup-btn {
+    flex: 1; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700;
+    cursor: pointer; border: none; min-width: 120px;
+  }
+  .btn-export-json { background: #1d4ed8; color: #fff; }
+  .btn-import-json { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-copy-code  { background: #14532d; color: #4ade80; }
+  .btn-paste-code { background: #7c2d12; color: #fb923c; }
+  .backup-hint { font-size: 11px; color: #475569; margin-bottom: 6px; }
+  #copy-status { font-size: 12px; color: #22c55e; min-height: 18px; margin-top: 4px; text-align: center; }
+
+  /* SUMMARY */
+  .summary-section-title { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .summary-row { font-size: 12px; color: #94a3b8; margin-bottom: 3px; }
+
+  /* LEGEND */
+  #legend {
+    margin: 10px 12px 0;
+    background: #0f172a; border: 1px solid #1e293b; border-radius: 10px;
+    padding: 9px 13px; font-size: 11px; color: #94a3b8;
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  }
+
+  /* CARDS */
+  #cards { padding: 10px 12px 0; display: flex; flex-direction: column; gap: 10px; }
+  .team-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 16px 14px 12px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .team-name-big { font-family: Impact, 'Arial Black', sans-serif; font-size: 26px; letter-spacing: 2px; color: #f8fafc; line-height: 1; }
+  .card-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .badge { font-size: 11px; border-radius: 20px; padding: 2px 8px; font-weight: 700; }
+  .badge-green  { background: #14532d; color: #4ade80; }
+  .badge-orange { background: #7c2d12; color: #fb923c; }
+  .badge-gray   { background: #1e293b; color: #64748b; }
+  .card-bar-wrap { background: #1e293b; border-radius: 99px; height: 4px; margin-bottom: 10px; overflow: hidden; }
+  .card-bar { background: linear-gradient(90deg, #22c55e, #16a34a); height: 100%; border-radius: 99px; transition: width 0.3s; }
+  .sticker-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 8px; }
+  .sticker-btn {
+    border-radius: 7px; font-weight: 800; font-size: 13px; padding: 7px 0;
+    cursor: pointer; font-family: monospace; border: 2px solid #334155;
+    background: #1e293b; color: #64748b; transition: transform 0.1s;
+    touch-action: manipulation;
+  }
+  .sticker-btn:active { transform: scale(0.88); }
+  .sticker-btn.state-1 { background: #14532d; border-color: #16a34a; color: #4ade80; }
+  .sticker-btn.state-2 { background: #7c2d12; border-color: #ea580c; color: #fb923c; }
+  .card-legend { display: flex; gap: 12px; font-size: 10px; color: #475569; }
+  #empty-msg { text-align: center; color: #475569; padding: 40px; display: none; }
+
+  /* MODAL */
+  #modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    z-index: 999; align-items: center; justify-content: center; padding: 20px;
+  }
+  #modal-overlay.visible { display: flex; }
+  #modal {
+    background: #0f172a; border: 1px solid #334155; border-radius: 14px;
+    padding: 20px; width: 100%; max-width: 420px;
+  }
+  #modal h3 { font-size: 15px; margin-bottom: 10px; }
+  #modal textarea {
+    width: 100%; background: #020817; border: 1px solid #334155; border-radius: 8px;
+    color: #f8fafc; font-size: 12px; padding: 10px; font-family: monospace;
+    resize: none; height: 120px; outline: none; margin-bottom: 10px;
+  }
+  #modal-hint { font-size: 11px; color: #64748b; margin-bottom: 12px; }
+  #modal-buttons { display: flex; gap: 8px; }
+  #modal-buttons button { flex: 1; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+  #modal-ok   { background: #1d4ed8; color: #fff; }
+  #modal-cancel { background: #1e293b; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div id="topbar-row1">
+    <div>
+      <div id="app-title">⚽ PANINI WC 2026</div>
+      <div id="global-stats">Cargando...</div>
+    </div>
+    <div id="top-buttons">
+      <button class="top-btn" id="btn-summary" onclick="togglePanel('summary-panel','btn-summary')">📋</button>
+      <button class="top-btn" id="btn-backup"  onclick="togglePanel('backup-panel','btn-backup')">💾</button>
+      <button class="top-btn" onclick="resetAll()" style="color:#ef4444;">↺</button>
+    </div>
+  </div>
+  <div id="global-bar-wrap"><div id="global-bar"></div></div>
+  <div id="search-row">
+    <input id="search" type="text" placeholder="Buscar país..." oninput="renderCards()">
+    <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">Todos</button>
+    <button class="filter-btn" id="filter-inc"        onclick="setFilter('incomplete')">Incompletos</button>
+    <button class="filter-btn" id="filter-com"        onclick="setFilter('complete')">Completos</button>
+  </div>
+</div>
+
+<!-- SUMMARY PANEL -->
+<div class="panel" id="summary-panel">
+  <div class="panel-title">📋 Resumen completo</div>
+  <div id="summary-content"></div>
+</div>
+
+<!-- BACKUP PANEL -->
+<div class="panel" id="backup-panel">
+  <div class="panel-title">💾 Guardar y restaurar progreso</div>
+
+  <p class="backup-hint">📤 <strong>Exportar JSON</strong> — descarga un archivo con toda tu data</p>
+  <p class="backup-hint">📥 <strong>Importar JSON</strong> — carga un archivo exportado anteriormente</p>
+  <p class="backup-hint">📋 <strong>Copiar código</strong> — copia texto corto para guardar en notas/WhatsApp</p>
+  <p class="backup-hint">📲 <strong>Pegar código</strong> — restaura desde ese texto copiado</p>
+
+  <div class="backup-row" style="margin-bottom:8px">
+    <button class="backup-btn btn-export-json" onclick="exportJSON()">📤 Exportar JSON</button>
+    <button class="backup-btn btn-import-json" onclick="triggerImport()">📥 Importar JSON</button>
+  </div>
+  <div class="backup-row">
+    <button class="backup-btn btn-copy-code" onclick="copyCode()">📋 Copiar código</button>
+    <button class="backup-btn btn-paste-code" onclick="openPasteModal()">📲 Pegar código</button>
+  </div>
+  <div id="copy-status"></div>
+  <input type="file" id="file-input" accept=".json" style="display:none" onchange="importJSON(event)">
+</div>
+
+<div id="legend">
+  <span>👆 Toca para cambiar:</span>
+  <span style="color:#64748b">⬛ Falta</span>
+  <span style="color:#4ade80">→ 🟩 Tengo</span>
+  <span style="color:#fb923c">→ 🟧 Repetida</span>
+  <span style="color:#64748b">→ ⬛ Falta</span>
+</div>
+
+<div id="cards"></div>
+<div id="empty-msg">No se encontraron países</div>
+
+<!-- PASTE MODAL -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h3>📲 Pegar código de respaldo</h3>
+    <p id="modal-hint">Pega aquí el código que copiaste antes. Tu progreso actual será reemplazado.</p>
+    <textarea id="modal-input" placeholder="Pega el código aquí..."></textarea>
+    <div id="modal-buttons">
+      <button id="modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button id="modal-ok" onclick="pasteCode()">Restaurar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEAMS = [
+  "FCW","MEX","RSA","KOR","CZE","CAN","BIH","QAT","SUI","BRA",
+  "MAR","HAI","SCO","USA","PAR","AUS","TUR","GER","CUW","CIV",
+  "ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","KSA",
+  "SEN","FRA","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD",
+  "UZB","COL","ENG","CRO","GHA","PAN","ESP","CPV"
+];
+const NUMS = Array.from({length:20},(_,i)=>i+1);
+const KEY = "panini_wc2026";
+let currentFilter = "all";
+let data = {};
+
+// ── DATA ──────────────────────────────────────────
+function loadData() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) { data = JSON.parse(raw); return; }
+  } catch {}
+  resetData(false);
+}
+function resetData(confirm_=true) {
+  data = {};
+  TEAMS.forEach(t => { data[t]={}; NUMS.forEach(n => data[t][n]=0); });
+  saveData();
+}
+function saveData() {
+  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {}
+}
+
+// ── STICKER TAP ───────────────────────────────────
+function tap(team, num) {
+  data[team][num] = (data[team][num]+1) % 3;
+  saveData();
+  updateCard(team);
+  updateTopBar();
+  if (document.getElementById('summary-panel').classList.contains('visible')) renderSummary();
+}
+
+function updateCard(team) {
+  let tengo=0, rep=0, falta=0;
+  NUMS.forEach(n => { const s=data[team][n]; if(s===1)tengo++; else if(s===2)rep++; else falta++; });
+  const bc = document.getElementById('badges-'+team);
+  if (bc) {
+    let h='';
+    if(tengo>0) h+=`<span class="badge badge-green">✓ ${tengo}</span>`;
+    if(rep>0)   h+=`<span class="badge badge-orange">×${rep} rep</span>`;
+    if(falta>0) h+=`<span class="badge badge-gray">${falta} falta</span>`;
+    bc.innerHTML=h;
+  }
+  const bar=document.getElementById('bar-'+team);
+  if(bar) bar.style.width=`${((tengo+rep)/20)*100}%`;
+  NUMS.forEach(n => {
+    const btn=document.getElementById(`s-${team}-${n}`);
+    if(btn) btn.className='sticker-btn state-'+data[team][n];
+  });
+}
+
+function updateTopBar() {
+  let tengo=0,rep=0,falta=0;
+  TEAMS.forEach(t=>NUMS.forEach(n=>{const s=data[t][n];if(s===1)tengo++;else if(s===2)rep++;else falta++;}));
+  const total=TEAMS.length*20;
+  document.getElementById('global-stats').textContent=`${tengo+rep}/${total} stickers • ${rep} repetidas • ${falta} faltan`;
+  document.getElementById('global-bar').style.width=`${((tengo+rep)/total)*100}%`;
+}
+
+// ── FILTER & RENDER ───────────────────────────────
+function setFilter(f) {
+  currentFilter=f;
+  ['all','inc','com'].forEach(x=>document.getElementById('filter-'+x).classList.remove('active'));
+  const map={all:'all',incomplete:'inc',complete:'com'};
+  document.getElementById('filter-'+map[f]).classList.add('active');
+  renderCards();
+}
+
+function getFilteredTeams() {
+  const q=document.getElementById('search').value.toLowerCase();
+  return TEAMS.filter(t=>{
+    if(q&&!t.toLowerCase().includes(q)) return false;
+    if(currentFilter==='complete') return NUMS.every(n=>data[t][n]>0);
+    if(currentFilter==='incomplete') return NUMS.some(n=>data[t][n]===0);
+    return true;
+  });
+}
+
+function renderCards() {
+  const teams=getFilteredTeams();
+  const container=document.getElementById('cards');
+  const empty=document.getElementById('empty-msg');
+  if(teams.length===0){container.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const existing=new Set([...container.querySelectorAll('.team-card')].map(el=>el.dataset.team));
+  const needed=new Set(teams);
+  [...container.querySelectorAll('.team-card')].forEach(el=>{if(!needed.has(el.dataset.team))el.remove();});
+  teams.forEach((team,idx)=>{
+    if(!existing.has(team)){
+      const card=buildCard(team);
+      const cards=[...container.querySelectorAll('.team-card')];
+      if(idx>=cards.length) container.appendChild(card);
+      else container.insertBefore(card,cards[idx]);
+    }
+  });
+  teams.forEach((team,idx)=>{
+    const cards=[...container.querySelectorAll('.team-card')];
+    if(cards[idx]&&cards[idx].dataset.team!==team){
+      const card=container.querySelector(`[data-team="${team}"]`);
+      if(card) container.insertBefore(card,cards[idx]);
+    }
+  });
+}
+
+function buildCard(team) {
+  const div=document.createElement('div');
+  div.className='team-card'; div.dataset.team=team;
+  let tengo=0,rep=0,falta=0;
+  NUMS.forEach(n=>{const s=data[team][n];if(s===1)tengo++;else if(s===2)rep++;else falta++;});
+  let badges='';
+  if(tengo>0) badges+=`<span class="badge badge-green">✓ ${tengo}</span>`;
+  if(rep>0)   badges+=`<span class="badge badge-orange">×${rep} rep</span>`;
+  if(falta>0) badges+=`<span class="badge badge-gray">${falta} falta</span>`;
+  let btns='';
+  NUMS.forEach(n=>{btns+=`<button id="s-${team}-${n}" class="sticker-btn state-${data[team][n]}" onclick="tap('${team}',${n})">${n}</button>`;});
+  div.innerHTML=`
+    <div class="card-header">
+      <div class="team-name-big">${team}</div>
+      <div class="card-badges" id="badges-${team}">${badges}</div>
+    </div>
+    <div class="card-bar-wrap"><div class="card-bar" id="bar-${team}" style="width:${((tengo+rep)/20)*100}%"></div></div>
+    <div class="sticker-grid">${btns}</div>
+    <div class="card-legend"><span>⬛ Falta</span><span style="color:#4ade80">🟩 Tengo</span><span style="color:#fb923c">🟧 Repetida</span></div>`;
+  return div;
+}
+
+// ── PANELS ────────────────────────────────────────
+function togglePanel(panelId, btnId) {
+  const panel=document.getElementById(panelId);
+  const btn=document.getElementById(btnId);
+  const visible=panel.classList.toggle('visible');
+  btn.classList.toggle('active',visible);
+  if(panelId==='summary-panel'&&visible) renderSummary();
+}
+
+function renderSummary() {
+  const rep=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===2)})).filter(x=>x.nums.length>0);
+  const falt=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===0)})).filter(x=>x.nums.length>0);
+  let h=`<div class="summary-section-title" style="color:#fb923c">🔁 REPETIDAS para intercambiar:</div>`;
+  if(!rep.length) h+=`<div class="summary-row">Ninguna aún</div>`;
+  else rep.forEach(({team,nums})=>h+=`<div class="summary-row"><span style="color:#fb923c;font-weight:700">${team}:</span> ${nums.join(', ')}</div>`);
+  h+=`<div class="summary-section-title" style="color:#64748b;margin-top:14px">❌ FALTAN:</div>`;
+  if(!falt.length) h+=`<div class="summary-row" style="color:#22c55e">🎉 ¡Álbum completo!</div>`;
+  else falt.forEach(({team,nums})=>h+=`<div class="summary-row"><span style="color:#64748b;font-weight:700">${team}:</span> ${nums.join(', ')}</div>`);
+  document.getElementById('summary-content').innerHTML=h;
+}
+
+function resetAll() {
+  if(!confirm('¿Reiniciar todo el álbum? Se perderá tu progreso.')) return;
+  resetData();
+  document.getElementById('cards').innerHTML='';
+  renderCards(); updateTopBar();
+}
+
+// ── BACKUP: JSON ──────────────────────────────────
+function exportJSON() {
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download=`panini_wc2026_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function triggerImport() { document.getElementById('file-input').click(); }
+
+function importJSON(e) {
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try {
+      const parsed=JSON.parse(ev.target.result);
+      data=parsed; saveData();
+      document.getElementById('cards').innerHTML='';
+      renderCards(); updateTopBar();
+      if(document.getElementById('summary-panel').classList.contains('visible')) renderSummary();
+      showStatus('✅ Datos importados correctamente');
+    } catch { showStatus('❌ Archivo inválido'); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+// ── BACKUP: CÓDIGO TEXTO ──────────────────────────
+function encodeData() {
+  // Compact: "FCW:0112001020..." per team, 0=falta,1=tengo,2=rep
+  return TEAMS.map(t=>t+':'+NUMS.map(n=>data[t][n]).join('')).join('|');
+}
+
+function decodeData(str) {
+  const parts=str.trim().split('|');
+  const parsed={};
+  parts.forEach(part=>{
+    const [team,nums]=part.split(':');
+    if(!team||!nums) return;
+    parsed[team]={};
+    [...nums].forEach((c,i)=>parsed[team][i+1]=parseInt(c)||0);
+  });
+  return parsed;
+}
+
+function copyCode() {
+  const code=encodeData();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code).then(()=>showStatus('✅ Código copiado — pégalo en WhatsApp o Notas'));
+  } else {
+    const ta=document.createElement('textarea');
+    ta.value=code; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showStatus('✅ Código copiado — pégalo en WhatsApp o Notas');
+  }
+}
+
+function openPasteModal() { document.getElementById('modal-overlay').classList.add('visible'); }
+function closeModal()      { document.getElementById('modal-overlay').classList.remove('visible'); document.getElementById('modal-input').value=''; }
+
+function pasteCode() {
+  const str=document.getElementById('modal-input').value;
+  if(!str.trim()){showStatus('❌ Pega un código primero');closeModal();return;}
+  try {
+    const parsed=decodeData(str);
+    if(!Object.keys(parsed).length) throw new Error();
+    data=parsed; saveData();
+    document.getElementById('cards').innerHTML='';
+    renderCards(); updateTopBar();
+    if(document.getElementById('summary-panel').classList.contains('visible')) renderSummary();
+    showStatus('✅ Progreso restaurado correctamente');
+    closeModal();
+  } catch { showStatus('❌ Código inválido, verifica que lo copiaste completo'); closeModal(); }
+}
+
+function showStatus(msg) {
+  const el=document.getElementById('copy-status');
+  el.textContent=msg;
+  setTimeout(()=>el.textContent='',4000);
+}
+
+// ── INIT ──────────────────────────────────────────
+loadData(); renderCards(); updateTopBar();
+</script>
+</body>
+</html>
