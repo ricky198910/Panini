@@ -94,6 +94,16 @@
     touch-action: manipulation;
   }
   .sticker-btn:active { transform: scale(0.88); }
+  .sticker-btn.state-0 {
+    box-shadow: 0 0 0 0 rgba(239,68,68,0.7);
+    animation: pulse-missing 2s infinite;
+    border-color: #ef4444;
+  }
+  @keyframes pulse-missing {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
+    70% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  }
   .sticker-btn.state-1 { background: #14532d; border-color: #16a34a; color: #4ade80; }
   .sticker-btn.state-2 { background: #7c2d12; border-color: #ea580c; color: #fb923c; }
   .sticker-btn.state-3 { background: linear-gradient(135deg, #14532d 50%, #7c2d12 50%); border-color: #a855f7; color: #fff; }
@@ -134,6 +144,7 @@
     </div>
     <div id="top-buttons">
       <button class="top-btn" id="btn-summary" onclick="togglePanel('summary-panel','btn-summary')">📋</button>
+      <button class="top-btn" id="btn-report"  onclick="togglePanel('report-panel','btn-report')">📄</button>
       <button class="top-btn" id="btn-backup"  onclick="togglePanel('backup-panel','btn-backup')">💾</button>
       <button class="top-btn" onclick="resetAll()" style="color:#ef4444;">↺</button>
     </div>
@@ -151,6 +162,17 @@
 <div class="panel" id="summary-panel">
   <div class="panel-title">📋 Resumen completo</div>
   <div id="summary-content"></div>
+</div>
+
+<!-- REPORT PANEL -->
+<div class="panel" id="report-panel">
+  <div class="panel-title">📄 Reporte para imprimir / compartir</div>
+  <div class="backup-row" style="margin-bottom:10px">
+    <button class="backup-btn btn-export-json" onclick="downloadReportImage()">🖼️ Descargar imagen</button>
+    <button class="backup-btn btn-copy-code" onclick="copyReportText()">📋 Copiar texto</button>
+  </div>
+  <div id="report-status" style="font-size:12px;color:#22c55e;min-height:18px;text-align:center;margin-bottom:8px;"></div>
+  <div id="report-canvas-wrap" style="overflow:auto;border:1px solid #1e293b;border-radius:8px;"></div>
 </div>
 
 <!-- BACKUP PANEL -->
@@ -236,6 +258,7 @@ function tap(team, num) {
   updateCard(team);
   updateTopBar();
   if (document.getElementById('summary-panel').classList.contains('visible')) renderSummary();
+  if (document.getElementById('report-panel').classList.contains('visible')) renderReportPreview();
 }
 
 function updateCard(team) {
@@ -341,6 +364,181 @@ function togglePanel(panelId, btnId) {
   const visible=panel.classList.toggle('visible');
   btn.classList.toggle('active',visible);
   if(panelId==='summary-panel'&&visible) renderSummary();
+  if(panelId==='report-panel'&&visible) renderReportPreview();
+}
+
+function buildReportText() {
+  const rep=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===2||data[t][n]===3)})).filter(x=>x.nums.length>0);
+  const falt=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===0)})).filter(x=>x.nums.length>0);
+
+  let tengo=0,rep2=0,falta=0,tengorep=0;
+  TEAMS.forEach(t=>NUMS.forEach(n=>{const s=data[t][n];if(s===1)tengo++;else if(s===2)rep2++;else if(s===3)tengorep++;else falta++;}));
+  const total=TEAMS.length*20;
+
+  let txt = `⚽ PANINI WC 2026 - REPORTE\n`;
+  txt += `Progreso: ${tengo+rep2+tengorep}/${total} (${Math.round(((tengo+rep2+tengorep)/total)*100)}%)\n\n`;
+
+  txt += `❌ FALTAN (${falt.reduce((a,x)=>a+x.nums.length,0)} stickers):\n`;
+  if(falt.length===0) txt += `¡Álbum completo! 🎉\n`;
+  else falt.forEach(({team,nums})=>{ txt += `${team}: ${nums.join(',')}\n`; });
+
+  txt += `\n🔁 REPETIDAS para intercambiar (${rep.reduce((a,x)=>a+x.nums.length,0)} stickers):\n`;
+  if(rep.length===0) txt += `Ninguna aún\n`;
+  else rep.forEach(({team,nums})=>{ txt += `${team}: ${nums.join(',')}\n`; });
+
+  return txt;
+}
+
+function copyReportText() {
+  const txt = buildReportText();
+  const status = document.getElementById('report-status');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>{status.textContent='✅ Reporte copiado al portapapeles';setTimeout(()=>status.textContent='',4000);});
+  } else {
+    const ta=document.createElement('textarea');
+    ta.value=txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    status.textContent='✅ Reporte copiado al portapapeles';
+    setTimeout(()=>status.textContent='',4000);
+  }
+}
+
+function renderReportPreview() {
+  const canvas = buildReportCanvas();
+  const wrap = document.getElementById('report-canvas-wrap');
+  wrap.innerHTML='';
+  canvas.style.width='100%';
+  canvas.style.display='block';
+  wrap.appendChild(canvas);
+}
+
+function downloadReportImage() {
+  const canvas = buildReportCanvas();
+  canvas.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`panini_wc2026_reporte_${new Date().toISOString().slice(0,10)}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    const status=document.getElementById('report-status');
+    status.textContent='✅ Imagen descargada';
+    setTimeout(()=>status.textContent='',4000);
+  },'image/png');
+}
+
+function buildReportCanvas() {
+  const rep=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===2||data[t][n]===3)})).filter(x=>x.nums.length>0);
+  const falt=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===0)})).filter(x=>x.nums.length>0);
+
+  let tengo=0,rep2=0,falta=0,tengorep=0;
+  TEAMS.forEach(t=>NUMS.forEach(n=>{const s=data[t][n];if(s===1)tengo++;else if(s===2)rep2++;else if(s===3)tengorep++;else falta++;}));
+  const total=TEAMS.length*20;
+
+  const W = 760;
+  const lineH = 22;
+  const padding = 24;
+  let y = padding;
+
+  // Estimate height first
+  let lines = 4; // title + progress + spacing
+  lines += 1; // "FALTAN" header
+  lines += Math.max(1, falt.length);
+  lines += 1; // spacing
+  lines += 1; // "REPETIDAS" header
+  lines += Math.max(1, rep.length);
+  lines += 1;
+
+  const H = padding*2 + lines*lineH + 30;
+
+  const canvas = document.createElement('canvas');
+  const scale = 2; // retina
+  canvas.width = W*scale;
+  canvas.height = H*scale;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale,scale);
+
+  // background
+  ctx.fillStyle = '#020817';
+  ctx.fillRect(0,0,W,H);
+
+  ctx.textBaseline = 'top';
+
+  // Title
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = 'bold 22px Arial';
+  ctx.fillText('⚽ PANINI WC 2026 — REPORTE', padding, y);
+  y += 32;
+
+  // Progress
+  const pct = Math.round(((tengo+rep2+tengorep)/total)*100);
+  ctx.font = '14px Arial';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`Progreso: ${tengo+rep2+tengorep}/${total} stickers (${pct}%)`, padding, y);
+  y += 18;
+  // progress bar
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(padding, y, W-padding*2, 8);
+  ctx.fillStyle = '#22c55e';
+  ctx.fillRect(padding, y, (W-padding*2)*(pct/100), 8);
+  y += 28;
+
+  // FALTAN section
+  ctx.font = 'bold 16px Arial';
+  ctx.fillStyle = '#64748b';
+  const totalFalt = falt.reduce((a,x)=>a+x.nums.length,0);
+  ctx.fillText(`❌ FALTAN  (${totalFalt} stickers)`, padding, y);
+  y += lineH;
+
+  ctx.font = '13px monospace';
+  if(falt.length===0){
+    ctx.fillStyle = '#22c55e';
+    ctx.fillText('¡Álbum completo! 🎉', padding, y);
+    y += lineH;
+  } else {
+    falt.forEach(({team,nums})=>{
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = 'bold 13px monospace';
+      ctx.fillText(team+':', padding, y);
+      ctx.font = '13px monospace';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(nums.join(', '), padding+50, y);
+      y += lineH;
+    });
+  }
+
+  y += 14;
+
+  // REPETIDAS section
+  ctx.font = 'bold 16px Arial';
+  ctx.fillStyle = '#fb923c';
+  const totalRep = rep.reduce((a,x)=>a+x.nums.length,0);
+  ctx.fillText(`🔁 REPETIDAS para intercambiar  (${totalRep} stickers)`, padding, y);
+  y += lineH;
+
+  ctx.font = '13px monospace';
+  if(rep.length===0){
+    ctx.fillStyle = '#475569';
+    ctx.fillText('Ninguna aún', padding, y);
+    y += lineH;
+  } else {
+    rep.forEach(({team,nums})=>{
+      ctx.fillStyle = '#fdba74';
+      ctx.font = 'bold 13px monospace';
+      ctx.fillText(team+':', padding, y);
+      ctx.font = '13px monospace';
+      ctx.fillStyle = '#fb923c';
+      ctx.fillText(nums.join(', '), padding+50, y);
+      y += lineH;
+    });
+  }
+
+  // Footer
+  ctx.font = '11px Arial';
+  ctx.fillStyle = '#334155';
+  ctx.fillText(new Date().toLocaleDateString('es-ES'), padding, H-padding+4);
+
+  return canvas;
 }
 
 function renderSummary() {
