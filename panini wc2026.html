@@ -79,6 +79,15 @@
   .team-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 16px 14px 12px; }
   .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .team-name-big { font-family: Impact, 'Arial Black', sans-serif; font-size: 26px; letter-spacing: 2px; color: #f8fafc; line-height: 1; }
+  .flag-shimmer {
+    display: inline-block;
+    filter: drop-shadow(0 0 4px rgba(226,232,240,0.9)) drop-shadow(0 0 8px rgba(226,232,240,0.5));
+    animation: flag-pulse 2s ease-in-out infinite;
+  }
+  @keyframes flag-pulse {
+    0%, 100% { filter: drop-shadow(0 0 2px rgba(226,232,240,0.6)) drop-shadow(0 0 4px rgba(226,232,240,0.3)); }
+    50% { filter: drop-shadow(0 0 6px rgba(226,232,240,1)) drop-shadow(0 0 12px rgba(226,232,240,0.7)); }
+  }
   .card-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
   .badge { font-size: 11px; border-radius: 20px; padding: 2px 8px; font-weight: 700; }
   .badge-green  { background: #14532d; color: #4ade80; }
@@ -137,7 +146,7 @@
 <div id="topbar">
   <div id="topbar-row1">
     <div>
-      <div id="app-title">⚽ PANINI WC 2026</div>
+      <div id="app-title">🏆 PANINI WC 2026</div>
       <div id="global-stats">Cargando...</div>
     </div>
     <div id="top-buttons">
@@ -206,6 +215,11 @@
 <div id="cards"></div>
 <div id="empty-msg" data-i18n="emptyMsg">No se encontraron países</div>
 
+<div id="app-footer" style="text-align:center;padding:24px 12px 40px;color:#334155;font-size:12px;">
+  🏆 Panini FIFA World Cup 2026<br>
+  <span data-i18n="footerCredit">Creado por Ricardo Casco</span>
+</div>
+
 <!-- PASTE MODAL -->
 <div id="modal-overlay">
   <div id="modal">
@@ -221,13 +235,26 @@
 
 <script>
 const TEAMS = [
-  "FCW","MEX","RSA","KOR","CZE","CAN","BIH","QAT","SUI","BRA",
+  "FWC","MEX","RSA","KOR","CZE","CAN","BIH","QAT","SUI","BRA",
   "MAR","HAI","SCO","USA","PAR","AUS","TUR","GER","CUW","CIV",
   "ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","KSA",
   "SEN","FRA","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD",
   "UZB","COL","ENG","CRO","GHA","PAN","ESP","CPV","URU"
 ];
 const NUMS = Array.from({length:20},(_,i)=>i+1);
+
+const FLAGS = {
+  "FWC": "⭐", "MEX": "🇲🇽", "RSA": "🇿🇦", "KOR": "🇰🇷", "CZE": "🇨🇿",
+  "CAN": "🇨🇦", "BIH": "🇧🇦", "QAT": "🇶🇦", "SUI": "🇨🇭", "BRA": "🇧🇷",
+  "MAR": "🇲🇦", "HAI": "🇭🇹", "SCO": "🏴", "USA": "🇺🇸", "PAR": "🇵🇾",
+  "AUS": "🇦🇺", "TUR": "🇹🇷", "GER": "🇩🇪", "CUW": "🇨🇼", "CIV": "🇨🇮",
+  "ECU": "🇪🇨", "NED": "🇳🇱", "JPN": "🇯🇵", "SWE": "🇸🇪", "TUN": "🇹🇳",
+  "BEL": "🇧🇪", "EGY": "🇪🇬", "IRN": "🇮🇷", "NZL": "🇳🇿", "KSA": "🇸🇦",
+  "SEN": "🇸🇳", "FRA": "🇫🇷", "IRQ": "🇮🇶", "NOR": "🇳🇴", "ARG": "🇦🇷",
+  "ALG": "🇩🇿", "AUT": "🇦🇹", "JOR": "🇯🇴", "POR": "🇵🇹", "COD": "🇨🇩",
+  "UZB": "🇺🇿", "COL": "🇨🇴", "ENG": "🏴", "CRO": "🇭🇷", "GHA": "🇬🇭",
+  "PAN": "🇵🇦", "ESP": "🇪🇸", "CPV": "🇨🇻", "URU": "🇺🇾",
+};
 const KEY = "panini_wc2026";
 const LANG_KEY = "panini_wc2026_lang";
 let currentFilter = "all";
@@ -259,6 +286,7 @@ const I18N = {
     legendRep: "→ 🟧 Repetida",
     legendBack: "→ ⬛ Falta",
     emptyMsg: "No se encontraron países",
+    footerCredit: "Creado por Ricardo Casco",
     modalTitle: "📲 Pegar código de respaldo",
     modalHint: "Pega aquí el código que copiaste antes. Tu progreso actual será reemplazado.",
     modalPlaceholder: "Pega el código aquí...",
@@ -314,6 +342,7 @@ const I18N = {
     legendRep: "→ 🟧 Duplicate",
     legendBack: "→ ⬛ Missing",
     emptyMsg: "No countries found",
+    footerCredit: "Created by Ricardo Casco",
     modalTitle: "📲 Paste backup code",
     modalHint: "Paste the code you copied earlier here. Your current progress will be replaced.",
     modalPlaceholder: "Paste the code here...",
@@ -402,6 +431,8 @@ function loadData() {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       data = JSON.parse(raw);
+      // Migrate FCW -> FWC rename
+      if (data['FCW'] && !data['FWC']) { data['FWC'] = data['FCW']; delete data['FCW']; }
       // Migrate old state 3 (Tengo+Rep) -> 2 (Repetida)
       TEAMS.forEach(t=>{ if(!data[t]) data[t]={}; NUMS.forEach(n=>{ if(data[t][n]===3) data[t][n]=2; if(data[t][n]===undefined) data[t][n]=0; }); });
       return;
@@ -515,7 +546,7 @@ function buildCard(team) {
   NUMS.forEach(n=>{btns+=`<button id="s-${team}-${n}" class="sticker-btn state-${data[team][n]}" onclick="tap('${team}',${n})">${n}</button>`;});
   div.innerHTML=`
     <div class="card-header">
-      <div class="team-name-big">${team}</div>
+      <div class="team-name-big"><span class="flag-shimmer">${FLAGS[team]||''}</span> ${team}</div>
       <div class="card-badges" id="badges-${team}">${badges}</div>
     </div>
     <div class="card-bar-wrap"><div class="card-bar" id="bar-${team}" style="width:${((tengo+rep+tengorep)/20)*100}%"></div></div>
@@ -765,8 +796,9 @@ function decodeData(str) {
   const parts=str.trim().split('|');
   const parsed={};
   parts.forEach(part=>{
-    const [team,nums]=part.split(':');
+    let [team,nums]=part.split(':');
     if(!team||!nums) return;
+    if(team==='FCW') team='FWC';
     parsed[team]={};
     [...nums].forEach((c,i)=>{ let v=parseInt(c)||0; if(v===3) v=2; parsed[team][i+1]=v; });
   });
