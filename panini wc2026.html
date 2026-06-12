@@ -95,14 +95,14 @@
   }
   .sticker-btn:active { transform: scale(0.88); }
   .sticker-btn.state-0 {
-    box-shadow: 0 0 0 0 rgba(239,68,68,0.7);
+    box-shadow: 0 0 0 0 rgba(203,213,225,0.6);
     animation: pulse-missing 2s infinite;
-    border-color: #ef4444;
+    border-color: #cbd5e1;
   }
   @keyframes pulse-missing {
-    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
-    70% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
-    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+    0% { box-shadow: 0 0 0 0 rgba(203,213,225,0.5); }
+    70% { box-shadow: 0 0 0 6px rgba(203,213,225,0); }
+    100% { box-shadow: 0 0 0 0 rgba(203,213,225,0); }
   }
   .sticker-btn.state-1 { background: #14532d; border-color: #16a34a; color: #4ade80; }
   .sticker-btn.state-2 { background: #7c2d12; border-color: #ea580c; color: #fb923c; }
@@ -520,7 +520,7 @@ function buildCard(team) {
     </div>
     <div class="card-bar-wrap"><div class="card-bar" id="bar-${team}" style="width:${((tengo+rep+tengorep)/20)*100}%"></div></div>
     <div class="sticker-grid">${btns}</div>
-    <div class="card-legend"><span>${t('legendFalta')}</span><span style="color:#4ade80">${t('legendTengo').replace('→ ','')}</span><span style="color:#fb923c">${t('legendRep').replace('→ ','')}</span><span style="color:#c4b5fd">${t('legendTengoRep').replace('→ ','')}</span></div>`;
+    <div class="card-legend"><span>${t('legendFalta')}</span><span style="color:#4ade80">${t('legendTengo').replace('→ ','')}</span><span style="color:#fb923c">${t('legendRep').replace('→ ','')}</span></div>`;
   return div;
 }
 
