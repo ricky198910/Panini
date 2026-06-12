@@ -308,6 +308,7 @@ const I18N = {
     statusInvalidCode: "❌ Código inválido, verifica que lo copiaste completo",
     statusReportCopied: "✅ Reporte copiado al portapapeles",
     statusImageDownloaded: "✅ Imagen descargada",
+    statusImageOpened: "✅ Imagen abierta — manten presionada para guardarla",
     reportHeader: "⚽ PANINI WC 2026 - REPORTE",
     reportProgress: (a,t,p)=>`Progreso: ${a}/${t} (${p}%)`,
     reportFaltan: (n)=>`❌ FALTAN (${n} stickers):`,
@@ -364,6 +365,7 @@ const I18N = {
     statusInvalidCode: "❌ Invalid code, check that you copied it completely",
     statusReportCopied: "✅ Report copied to clipboard",
     statusImageDownloaded: "✅ Image downloaded",
+    statusImageOpened: "✅ Image opened — long-press to save it",
     reportHeader: "⚽ PANINI WC 2026 - REPORT",
     reportProgress: (a,t,p)=>`Progress: ${a}/${t} (${p}%)`,
     reportFaltan: (n)=>`❌ MISSING (${n} stickers):`,
@@ -612,17 +614,26 @@ function renderReportPreview() {
 
 function downloadReportImage() {
   const canvas = buildReportCanvas();
-  canvas.toBlob(blob=>{
-    const url=URL.createObjectURL(blob);
+  const dataUrl = canvas.toDataURL('image/png');
+  const status=document.getElementById('report-status');
+
+  // iOS Safari blocks programmatic download via blob+click in many cases.
+  // Open the image in a new tab so the user can long-press → "Save Image".
+  const win = window.open();
+  if (win) {
+    win.document.write(`<html><head><title>Panini WC 2026</title></head><body style="margin:0;background:#020817;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${dataUrl}" style="max-width:100%;height:auto;display:block;"></body></html>`);
+    status.textContent = t('statusImageOpened');
+  } else {
+    // Fallback: try the download attribute approach
     const a=document.createElement('a');
-    a.href=url;
+    a.href=dataUrl;
     a.download=`panini_wc2026_reporte_${new Date().toISOString().slice(0,10)}.png`;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
-    const status=document.getElementById('report-status');
+    document.body.removeChild(a);
     status.textContent=t('statusImageDownloaded');
-    setTimeout(()=>status.textContent='',4000);
-  },'image/png');
+  }
+  setTimeout(()=>status.textContent='',6000);
 }
 
 function buildReportCanvas() {
