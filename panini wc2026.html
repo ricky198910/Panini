@@ -106,8 +106,6 @@
   }
   .sticker-btn.state-1 { background: #14532d; border-color: #16a34a; color: #4ade80; }
   .sticker-btn.state-2 { background: #7c2d12; border-color: #ea580c; color: #fb923c; }
-  .sticker-btn.state-3 { background: linear-gradient(135deg, #14532d 50%, #7c2d12 50%); border-color: #a855f7; color: #fff; }
-  .badge-purple { background: #4c1d95; color: #c4b5fd; }
   .card-legend { display: flex; gap: 12px; font-size: 10px; color: #475569; }
   #empty-msg { text-align: center; color: #475569; padding: 40px; display: none; }
 
@@ -143,6 +141,7 @@
       <div id="global-stats">Cargando...</div>
     </div>
     <div id="top-buttons">
+      <button class="top-btn" id="btn-lang" onclick="toggleLang()">🌐</button>
       <button class="top-btn" id="btn-summary" onclick="togglePanel('summary-panel','btn-summary')">📋</button>
       <button class="top-btn" id="btn-report"  onclick="togglePanel('report-panel','btn-report')">📄</button>
       <button class="top-btn" id="btn-backup"  onclick="togglePanel('backup-panel','btn-backup')">💾</button>
@@ -151,25 +150,25 @@
   </div>
   <div id="global-bar-wrap"><div id="global-bar"></div></div>
   <div id="search-row">
-    <input id="search" type="text" placeholder="Buscar país..." oninput="renderCards()">
-    <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">Todos</button>
-    <button class="filter-btn" id="filter-inc"        onclick="setFilter('incomplete')">Incompletos</button>
-    <button class="filter-btn" id="filter-com"        onclick="setFilter('complete')">Completos</button>
+    <input id="search" type="text" data-i18n-placeholder="search" placeholder="Buscar país..." oninput="renderCards()">
+    <button class="filter-btn active" id="filter-all" onclick="setFilter('all')" data-i18n="filterAll">Todos</button>
+    <button class="filter-btn" id="filter-inc"        onclick="setFilter('incomplete')" data-i18n="filterIncomplete">Incompletos</button>
+    <button class="filter-btn" id="filter-com"        onclick="setFilter('complete')" data-i18n="filterComplete">Completos</button>
   </div>
 </div>
 
 <!-- SUMMARY PANEL -->
 <div class="panel" id="summary-panel">
-  <div class="panel-title">📋 Resumen completo</div>
+  <div class="panel-title" data-i18n="summaryTitle">📋 Resumen completo</div>
   <div id="summary-content"></div>
 </div>
 
 <!-- REPORT PANEL -->
 <div class="panel" id="report-panel">
-  <div class="panel-title">📄 Reporte para imprimir / compartir</div>
+  <div class="panel-title" data-i18n="reportTitle">📄 Reporte para imprimir / compartir</div>
   <div class="backup-row" style="margin-bottom:10px">
-    <button class="backup-btn btn-export-json" onclick="downloadReportImage()">🖼️ Descargar imagen</button>
-    <button class="backup-btn btn-copy-code" onclick="copyReportText()">📋 Copiar texto</button>
+    <button class="backup-btn btn-export-json" onclick="downloadReportImage()" data-i18n="downloadImage">🖼️ Descargar imagen</button>
+    <button class="backup-btn btn-copy-code" onclick="copyReportText()" data-i18n="copyText">📋 Copiar texto</button>
   </div>
   <div id="report-status" style="font-size:12px;color:#22c55e;min-height:18px;text-align:center;margin-bottom:8px;"></div>
   <div id="report-canvas-wrap" style="overflow:auto;border:1px solid #1e293b;border-radius:8px;"></div>
@@ -177,46 +176,45 @@
 
 <!-- BACKUP PANEL -->
 <div class="panel" id="backup-panel">
-  <div class="panel-title">💾 Guardar y restaurar progreso</div>
+  <div class="panel-title" data-i18n="backupTitle">💾 Guardar y restaurar progreso</div>
 
-  <p class="backup-hint">📤 <strong>Exportar JSON</strong> — descarga un archivo con toda tu data</p>
-  <p class="backup-hint">📥 <strong>Importar JSON</strong> — carga un archivo exportado anteriormente</p>
-  <p class="backup-hint">📋 <strong>Copiar código</strong> — copia texto corto para guardar en notas/WhatsApp</p>
-  <p class="backup-hint">📲 <strong>Pegar código</strong> — restaura desde ese texto copiado</p>
+  <p class="backup-hint" data-i18n="hintExportJson">📤 <strong>Exportar JSON</strong> — descarga un archivo con toda tu data</p>
+  <p class="backup-hint" data-i18n="hintImportJson">📥 <strong>Importar JSON</strong> — carga un archivo exportado anteriormente</p>
+  <p class="backup-hint" data-i18n="hintCopyCode">📋 <strong>Copiar código</strong> — copia texto corto para guardar en notas/WhatsApp</p>
+  <p class="backup-hint" data-i18n="hintPasteCode">📲 <strong>Pegar código</strong> — restaura desde ese texto copiado</p>
 
   <div class="backup-row" style="margin-bottom:8px">
-    <button class="backup-btn btn-export-json" onclick="exportJSON()">📤 Exportar JSON</button>
-    <button class="backup-btn btn-import-json" onclick="triggerImport()">📥 Importar JSON</button>
+    <button class="backup-btn btn-export-json" onclick="exportJSON()" data-i18n="exportJson">📤 Exportar JSON</button>
+    <button class="backup-btn btn-import-json" onclick="triggerImport()" data-i18n="importJson">📥 Importar JSON</button>
   </div>
   <div class="backup-row">
-    <button class="backup-btn btn-copy-code" onclick="copyCode()">📋 Copiar código</button>
-    <button class="backup-btn btn-paste-code" onclick="openPasteModal()">📲 Pegar código</button>
+    <button class="backup-btn btn-copy-code" onclick="copyCode()" data-i18n="copyCode">📋 Copiar código</button>
+    <button class="backup-btn btn-paste-code" onclick="openPasteModal()" data-i18n="pasteCode">📲 Pegar código</button>
   </div>
   <div id="copy-status"></div>
   <input type="file" id="file-input" accept=".json" style="display:none" onchange="importJSON(event)">
 </div>
 
 <div id="legend">
-  <span>👆 Toca para cambiar:</span>
-  <span style="color:#64748b">⬛ Falta</span>
-  <span style="color:#4ade80">→ 🟩 Tengo</span>
-  <span style="color:#fb923c">→ 🟧 Repetida</span>
-  <span style="color:#c4b5fd">→ 🟪 Tengo+Rep</span>
-  <span style="color:#64748b">→ ⬛ Falta</span>
+  <span data-i18n="legendTap">👆 Toca para cambiar:</span>
+  <span style="color:#64748b" data-i18n="legendFalta">⬛ Falta</span>
+  <span style="color:#4ade80" data-i18n="legendTengo">→ 🟩 Tengo</span>
+  <span style="color:#fb923c" data-i18n="legendRep">→ 🟧 Repetida</span>
+  <span style="color:#64748b" data-i18n="legendBack">→ ⬛ Falta</span>
 </div>
 
 <div id="cards"></div>
-<div id="empty-msg">No se encontraron países</div>
+<div id="empty-msg" data-i18n="emptyMsg">No se encontraron países</div>
 
 <!-- PASTE MODAL -->
 <div id="modal-overlay">
   <div id="modal">
-    <h3>📲 Pegar código de respaldo</h3>
-    <p id="modal-hint">Pega aquí el código que copiaste antes. Tu progreso actual será reemplazado.</p>
-    <textarea id="modal-input" placeholder="Pega el código aquí..."></textarea>
+    <h3 data-i18n="modalTitle">📲 Pegar código de respaldo</h3>
+    <p id="modal-hint" data-i18n="modalHint">Pega aquí el código que copiaste antes. Tu progreso actual será reemplazado.</p>
+    <textarea id="modal-input" data-i18n-placeholder="modalPlaceholder" placeholder="Pega el código aquí..."></textarea>
     <div id="modal-buttons">
-      <button id="modal-cancel" onclick="closeModal()">Cancelar</button>
-      <button id="modal-ok" onclick="pasteCode()">Restaurar</button>
+      <button id="modal-cancel" onclick="closeModal()" data-i18n="cancel">Cancelar</button>
+      <button id="modal-ok" onclick="pasteCode()" data-i18n="restore">Restaurar</button>
     </div>
   </div>
 </div>
@@ -231,14 +229,183 @@ const TEAMS = [
 ];
 const NUMS = Array.from({length:20},(_,i)=>i+1);
 const KEY = "panini_wc2026";
+const LANG_KEY = "panini_wc2026_lang";
 let currentFilter = "all";
 let data = {};
+
+// ── I18N ──────────────────────────────────────────
+const I18N = {
+  es: {
+    search: "Buscar país...",
+    filterAll: "Todos",
+    filterIncomplete: "Incompletos",
+    filterComplete: "Completos",
+    summaryTitle: "📋 Resumen completo",
+    reportTitle: "📄 Reporte para imprimir / compartir",
+    downloadImage: "🖼️ Descargar imagen",
+    copyText: "📋 Copiar texto",
+    backupTitle: "💾 Guardar y restaurar progreso",
+    hintExportJson: "📤 <strong>Exportar JSON</strong> — descarga un archivo con toda tu data",
+    hintImportJson: "📥 <strong>Importar JSON</strong> — carga un archivo exportado anteriormente",
+    hintCopyCode: "📋 <strong>Copiar código</strong> — copia texto corto para guardar en notas/WhatsApp",
+    hintPasteCode: "📲 <strong>Pegar código</strong> — restaura desde ese texto copiado",
+    exportJson: "📤 Exportar JSON",
+    importJson: "📥 Importar JSON",
+    copyCode: "📋 Copiar código",
+    pasteCode: "📲 Pegar código",
+    legendTap: "👆 Toca para cambiar:",
+    legendFalta: "⬛ Falta",
+    legendTengo: "→ 🟩 Tengo",
+    legendRep: "→ 🟧 Repetida",
+    legendBack: "→ ⬛ Falta",
+    emptyMsg: "No se encontraron países",
+    modalTitle: "📲 Pegar código de respaldo",
+    modalHint: "Pega aquí el código que copiaste antes. Tu progreso actual será reemplazado.",
+    modalPlaceholder: "Pega el código aquí...",
+    cancel: "Cancelar",
+    restore: "Restaurar",
+    globalStats: (a,t,r,f)=>`${a}/${t} stickers • ${r} repetidas • ${f} faltan`,
+    badgeRep: "rep",
+    badgeFalta: "falta",
+    repetidasTitle: "🔁 REPETIDAS para intercambiar:",
+    faltanTitle: "❌ FALTAN:",
+    noneYet: "Ninguna aún",
+    albumComplete: "🎉 ¡Álbum completo!",
+    confirmReset: "¿Reiniciar todo el álbum? Se perderá tu progreso.",
+    statusImported: "✅ Datos importados correctamente",
+    statusInvalidFile: "❌ Archivo inválido",
+    statusCopied: "✅ Código copiado — pégalo en WhatsApp o Notas",
+    statusRestored: "✅ Progreso restaurado correctamente",
+    statusEmptyCode: "❌ Pega un código primero",
+    statusInvalidCode: "❌ Código inválido, verifica que lo copiaste completo",
+    statusReportCopied: "✅ Reporte copiado al portapapeles",
+    statusImageDownloaded: "✅ Imagen descargada",
+    reportHeader: "⚽ PANINI WC 2026 - REPORTE",
+    reportProgress: (a,t,p)=>`Progreso: ${a}/${t} (${p}%)`,
+    reportFaltan: (n)=>`❌ FALTAN (${n} stickers):`,
+    reportRepetidas: (n)=>`🔁 REPETIDAS para intercambiar (${n} stickers):`,
+    canvasTitle: "⚽ PANINI WC 2026 — REPORTE",
+    canvasProgress: (a,t,p)=>`Progreso: ${a}/${t} stickers (${p}%)`,
+    canvasFaltan: (n)=>`❌ FALTAN  (${n} stickers)`,
+    canvasRepetidas: (n)=>`🔁 REPETIDAS para intercambiar  (${n} stickers)`,
+    locale: 'es-ES',
+  },
+  en: {
+    search: "Search country...",
+    filterAll: "All",
+    filterIncomplete: "Incomplete",
+    filterComplete: "Complete",
+    summaryTitle: "📋 Full summary",
+    reportTitle: "📄 Report to print / share",
+    downloadImage: "🖼️ Download image",
+    copyText: "📋 Copy text",
+    backupTitle: "💾 Save and restore progress",
+    hintExportJson: "📤 <strong>Export JSON</strong> — download a file with all your data",
+    hintImportJson: "📥 <strong>Import JSON</strong> — load a previously exported file",
+    hintCopyCode: "📋 <strong>Copy code</strong> — copy a short text to save in notes/WhatsApp",
+    hintPasteCode: "📲 <strong>Paste code</strong> — restore from that copied text",
+    exportJson: "📤 Export JSON",
+    importJson: "📥 Import JSON",
+    copyCode: "📋 Copy code",
+    pasteCode: "📲 Paste code",
+    legendTap: "👆 Tap to change:",
+    legendFalta: "⬛ Missing",
+    legendTengo: "→ 🟩 Have",
+    legendRep: "→ 🟧 Duplicate",
+    legendBack: "→ ⬛ Missing",
+    emptyMsg: "No countries found",
+    modalTitle: "📲 Paste backup code",
+    modalHint: "Paste the code you copied earlier here. Your current progress will be replaced.",
+    modalPlaceholder: "Paste the code here...",
+    cancel: "Cancel",
+    restore: "Restore",
+    globalStats: (a,t,r,f)=>`${a}/${t} stickers • ${r} duplicates • ${f} missing`,
+    badgeRep: "dup",
+    badgeFalta: "missing",
+    repetidasTitle: "🔁 DUPLICATES to trade:",
+    faltanTitle: "❌ MISSING:",
+    noneYet: "None yet",
+    albumComplete: "🎉 Album complete!",
+    confirmReset: "Reset the whole album? Your progress will be lost.",
+    statusImported: "✅ Data imported successfully",
+    statusInvalidFile: "❌ Invalid file",
+    statusCopied: "✅ Code copied — paste it in WhatsApp or Notes",
+    statusRestored: "✅ Progress restored successfully",
+    statusEmptyCode: "❌ Paste a code first",
+    statusInvalidCode: "❌ Invalid code, check that you copied it completely",
+    statusReportCopied: "✅ Report copied to clipboard",
+    statusImageDownloaded: "✅ Image downloaded",
+    reportHeader: "⚽ PANINI WC 2026 - REPORT",
+    reportProgress: (a,t,p)=>`Progress: ${a}/${t} (${p}%)`,
+    reportFaltan: (n)=>`❌ MISSING (${n} stickers):`,
+    reportRepetidas: (n)=>`🔁 DUPLICATES to trade (${n} stickers):`,
+    canvasTitle: "⚽ PANINI WC 2026 — REPORT",
+    canvasProgress: (a,t,p)=>`Progress: ${a}/${t} stickers (${p}%)`,
+    canvasFaltan: (n)=>`❌ MISSING  (${n} stickers)`,
+    canvasRepetidas: (n)=>`🔁 DUPLICATES to trade  (${n} stickers)`,
+    locale: 'en-US',
+  }
+};
+
+let currentLang = 'es';
+
+function t(key, ...args) {
+  const val = I18N[currentLang][key];
+  if (typeof val === 'function') return val(...args);
+  return val;
+}
+
+function loadLang() {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved && I18N[saved]) currentLang = saved;
+  } catch {}
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'es' ? 'en' : 'es';
+  try { localStorage.setItem(LANG_KEY, currentLang); } catch {}
+  applyLang();
+}
+
+function applyLang() {
+  // Static elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    const val = I18N[currentLang][key];
+    if (typeof val === 'string') {
+      if (val.includes('<strong>')) el.innerHTML = val;
+      else el.textContent = val;
+    }
+  });
+  // Placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-placeholder');
+    const val = I18N[currentLang][key];
+    if (typeof val === 'string') el.placeholder = val;
+  });
+  // Lang button label
+  document.getElementById('btn-lang').textContent = currentLang === 'es' ? '🌐 EN' : '🌐 ES';
+
+  // Dynamic content
+  updateTopBar();
+  document.getElementById('cards').innerHTML='';
+  renderCards();
+  if (document.getElementById('summary-panel').classList.contains('visible')) renderSummary();
+  if (document.getElementById('report-panel').classList.contains('visible')) renderReportPreview();
+}
+
 
 // ── DATA ──────────────────────────────────────────
 function loadData() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) { data = JSON.parse(raw); return; }
+    if (raw) {
+      data = JSON.parse(raw);
+      // Migrate old state 3 (Tengo+Rep) -> 2 (Repetida)
+      TEAMS.forEach(t=>{ if(!data[t]) data[t]={}; NUMS.forEach(n=>{ if(data[t][n]===3) data[t][n]=2; if(data[t][n]===undefined) data[t][n]=0; }); });
+      return;
+    }
   } catch {}
   resetData(false);
 }
@@ -253,7 +420,7 @@ function saveData() {
 
 // ── STICKER TAP ───────────────────────────────────
 function tap(team, num) {
-  data[team][num] = (data[team][num]+1) % 4;
+  data[team][num] = (data[team][num]+1) % 3;
   saveData();
   updateCard(team);
   updateTopBar();
@@ -268,9 +435,9 @@ function updateCard(team) {
   if (bc) {
     let h='';
     if(tengo>0)    h+=`<span class="badge badge-green">✓ ${tengo}</span>`;
-    if(rep>0)      h+=`<span class="badge badge-orange">×${rep} rep</span>`;
-    if(tengorep>0) h+=`<span class="badge badge-purple">✓+×${tengorep}</span>`;
-    if(falta>0)    h+=`<span class="badge badge-gray">${falta} falta</span>`;
+    if(rep>0)      h+=`<span class="badge badge-orange">×${rep} ${t('badgeRep')}</span>`;
+    
+    if(falta>0)    h+=`<span class="badge badge-gray">${falta} ${t('badgeFalta')}</span>`;
     bc.innerHTML=h;
   }
   const bar=document.getElementById('bar-'+team);
@@ -285,7 +452,7 @@ function updateTopBar() {
   let tengo=0,rep=0,falta=0,tengorep=0;
   TEAMS.forEach(t=>NUMS.forEach(n=>{const s=data[t][n];if(s===1)tengo++;else if(s===2)rep++;else if(s===3)tengorep++;else falta++;}));
   const total=TEAMS.length*20;
-  document.getElementById('global-stats').textContent=`${tengo+rep+tengorep}/${total} stickers • ${rep+tengorep} repetidas • ${falta} faltan`;
+  document.getElementById('global-stats').textContent=t('globalStats', tengo+rep+tengorep, total, rep+tengorep, falta);
   document.getElementById('global-bar').style.width=`${((tengo+rep+tengorep)/total)*100}%`;
 }
 
@@ -341,9 +508,9 @@ function buildCard(team) {
   NUMS.forEach(n=>{const s=data[team][n];if(s===1)tengo++;else if(s===2)rep++;else if(s===3)tengorep++;else falta++;});
   let badges='';
   if(tengo>0)    badges+=`<span class="badge badge-green">✓ ${tengo}</span>`;
-  if(rep>0)      badges+=`<span class="badge badge-orange">×${rep} rep</span>`;
-  if(tengorep>0) badges+=`<span class="badge badge-purple">✓+×${tengorep}</span>`;
-  if(falta>0)    badges+=`<span class="badge badge-gray">${falta} falta</span>`;
+  if(rep>0)      badges+=`<span class="badge badge-orange">×${rep} ${t('badgeRep')}</span>`;
+  
+  if(falta>0)    badges+=`<span class="badge badge-gray">${falta} ${t('badgeFalta')}</span>`;
   let btns='';
   NUMS.forEach(n=>{btns+=`<button id="s-${team}-${n}" class="sticker-btn state-${data[team][n]}" onclick="tap('${team}',${n})">${n}</button>`;});
   div.innerHTML=`
@@ -353,7 +520,7 @@ function buildCard(team) {
     </div>
     <div class="card-bar-wrap"><div class="card-bar" id="bar-${team}" style="width:${((tengo+rep+tengorep)/20)*100}%"></div></div>
     <div class="sticker-grid">${btns}</div>
-    <div class="card-legend"><span>⬛ Falta</span><span style="color:#4ade80">🟩 Tengo</span><span style="color:#fb923c">🟧 Repetida</span><span style="color:#c4b5fd">🟪 Tengo+Rep</span></div>`;
+    <div class="card-legend"><span>${t('legendFalta')}</span><span style="color:#4ade80">${t('legendTengo').replace('→ ','')}</span><span style="color:#fb923c">${t('legendRep').replace('→ ','')}</span><span style="color:#c4b5fd">${t('legendTengoRep').replace('→ ','')}</span></div>`;
   return div;
 }
 
@@ -368,22 +535,22 @@ function togglePanel(panelId, btnId) {
 }
 
 function buildReportText() {
-  const rep=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===2||data[t][n]===3)})).filter(x=>x.nums.length>0);
-  const falt=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===0)})).filter(x=>x.nums.length>0);
+  const rep=TEAMS.map(t2=>({team:t2,nums:NUMS.filter(n=>data[t2][n]===2||data[t2][n]===3)})).filter(x=>x.nums.length>0);
+  const falt=TEAMS.map(t2=>({team:t2,nums:NUMS.filter(n=>data[t2][n]===0)})).filter(x=>x.nums.length>0);
 
   let tengo=0,rep2=0,falta=0,tengorep=0;
-  TEAMS.forEach(t=>NUMS.forEach(n=>{const s=data[t][n];if(s===1)tengo++;else if(s===2)rep2++;else if(s===3)tengorep++;else falta++;}));
+  TEAMS.forEach(t2=>NUMS.forEach(n=>{const s=data[t2][n];if(s===1)tengo++;else if(s===2)rep2++;else if(s===3)tengorep++;else falta++;}));
   const total=TEAMS.length*20;
 
-  let txt = `⚽ PANINI WC 2026 - REPORTE\n`;
-  txt += `Progreso: ${tengo+rep2+tengorep}/${total} (${Math.round(((tengo+rep2+tengorep)/total)*100)}%)\n\n`;
+  let txt = t('reportHeader')+`\n`;
+  txt += t('reportProgress', tengo+rep2+tengorep, total, Math.round(((tengo+rep2+tengorep)/total)*100))+`\n\n`;
 
-  txt += `❌ FALTAN (${falt.reduce((a,x)=>a+x.nums.length,0)} stickers):\n`;
-  if(falt.length===0) txt += `¡Álbum completo! 🎉\n`;
+  txt += t('reportFaltan', falt.reduce((a,x)=>a+x.nums.length,0))+`\n`;
+  if(falt.length===0) txt += t('albumComplete')+`\n`;
   else falt.forEach(({team,nums})=>{ txt += `${team}: ${nums.join(',')}\n`; });
 
-  txt += `\n🔁 REPETIDAS para intercambiar (${rep.reduce((a,x)=>a+x.nums.length,0)} stickers):\n`;
-  if(rep.length===0) txt += `Ninguna aún\n`;
+  txt += `\n`+t('reportRepetidas', rep.reduce((a,x)=>a+x.nums.length,0))+`\n`;
+  if(rep.length===0) txt += t('noneYet')+`\n`;
   else rep.forEach(({team,nums})=>{ txt += `${team}: ${nums.join(',')}\n`; });
 
   return txt;
@@ -393,12 +560,12 @@ function copyReportText() {
   const txt = buildReportText();
   const status = document.getElementById('report-status');
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(()=>{status.textContent='✅ Reporte copiado al portapapeles';setTimeout(()=>status.textContent='',4000);});
+    navigator.clipboard.writeText(txt).then(()=>{status.textContent=t('statusReportCopied');setTimeout(()=>status.textContent='',4000);});
   } else {
     const ta=document.createElement('textarea');
     ta.value=txt; document.body.appendChild(ta); ta.select();
     document.execCommand('copy'); document.body.removeChild(ta);
-    status.textContent='✅ Reporte copiado al portapapeles';
+    status.textContent=t('statusReportCopied');
     setTimeout(()=>status.textContent='',4000);
   }
 }
@@ -422,17 +589,17 @@ function downloadReportImage() {
     a.click();
     URL.revokeObjectURL(url);
     const status=document.getElementById('report-status');
-    status.textContent='✅ Imagen descargada';
+    status.textContent=t('statusImageDownloaded');
     setTimeout(()=>status.textContent='',4000);
   },'image/png');
 }
 
 function buildReportCanvas() {
-  const rep=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===2||data[t][n]===3)})).filter(x=>x.nums.length>0);
-  const falt=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===0)})).filter(x=>x.nums.length>0);
+  const rep=TEAMS.map(t2=>({team:t2,nums:NUMS.filter(n=>data[t2][n]===2||data[t2][n]===3)})).filter(x=>x.nums.length>0);
+  const falt=TEAMS.map(t2=>({team:t2,nums:NUMS.filter(n=>data[t2][n]===0)})).filter(x=>x.nums.length>0);
 
   let tengo=0,rep2=0,falta=0,tengorep=0;
-  TEAMS.forEach(t=>NUMS.forEach(n=>{const s=data[t][n];if(s===1)tengo++;else if(s===2)rep2++;else if(s===3)tengorep++;else falta++;}));
+  TEAMS.forEach(t2=>NUMS.forEach(n=>{const s=data[t2][n];if(s===1)tengo++;else if(s===2)rep2++;else if(s===3)tengorep++;else falta++;}));
   const total=TEAMS.length*20;
 
   const W = 760;
@@ -467,14 +634,14 @@ function buildReportCanvas() {
   // Title
   ctx.fillStyle = '#f8fafc';
   ctx.font = 'bold 22px Arial';
-  ctx.fillText('⚽ PANINI WC 2026 — REPORTE', padding, y);
+  ctx.fillText(t('canvasTitle'), padding, y);
   y += 32;
 
   // Progress
   const pct = Math.round(((tengo+rep2+tengorep)/total)*100);
   ctx.font = '14px Arial';
   ctx.fillStyle = '#94a3b8';
-  ctx.fillText(`Progreso: ${tengo+rep2+tengorep}/${total} stickers (${pct}%)`, padding, y);
+  ctx.fillText(t('canvasProgress', tengo+rep2+tengorep, total, pct), padding, y);
   y += 18;
   // progress bar
   ctx.fillStyle = '#1e293b';
@@ -487,13 +654,13 @@ function buildReportCanvas() {
   ctx.font = 'bold 16px Arial';
   ctx.fillStyle = '#64748b';
   const totalFalt = falt.reduce((a,x)=>a+x.nums.length,0);
-  ctx.fillText(`❌ FALTAN  (${totalFalt} stickers)`, padding, y);
+  ctx.fillText(t('canvasFaltan', totalFalt), padding, y);
   y += lineH;
 
   ctx.font = '13px monospace';
   if(falt.length===0){
     ctx.fillStyle = '#22c55e';
-    ctx.fillText('¡Álbum completo! 🎉', padding, y);
+    ctx.fillText(t('albumComplete'), padding, y);
     y += lineH;
   } else {
     falt.forEach(({team,nums})=>{
@@ -513,13 +680,13 @@ function buildReportCanvas() {
   ctx.font = 'bold 16px Arial';
   ctx.fillStyle = '#fb923c';
   const totalRep = rep.reduce((a,x)=>a+x.nums.length,0);
-  ctx.fillText(`🔁 REPETIDAS para intercambiar  (${totalRep} stickers)`, padding, y);
+  ctx.fillText(t('canvasRepetidas', totalRep), padding, y);
   y += lineH;
 
   ctx.font = '13px monospace';
   if(rep.length===0){
     ctx.fillStyle = '#475569';
-    ctx.fillText('Ninguna aún', padding, y);
+    ctx.fillText(t('noneYet'), padding, y);
     y += lineH;
   } else {
     rep.forEach(({team,nums})=>{
@@ -536,25 +703,25 @@ function buildReportCanvas() {
   // Footer
   ctx.font = '11px Arial';
   ctx.fillStyle = '#334155';
-  ctx.fillText(new Date().toLocaleDateString('es-ES'), padding, H-padding+4);
+  ctx.fillText(new Date().toLocaleDateString(I18N[currentLang].locale), padding, H-padding+4);
 
   return canvas;
 }
 
 function renderSummary() {
-  const rep=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===2||data[t][n]===3)})).filter(x=>x.nums.length>0);
-  const falt=TEAMS.map(t=>({team:t,nums:NUMS.filter(n=>data[t][n]===0)})).filter(x=>x.nums.length>0);
-  let h=`<div class="summary-section-title" style="color:#fb923c">🔁 REPETIDAS para intercambiar:</div>`;
-  if(!rep.length) h+=`<div class="summary-row">Ninguna aún</div>`;
+  const rep=TEAMS.map(t2=>({team:t2,nums:NUMS.filter(n=>data[t2][n]===2||data[t2][n]===3)})).filter(x=>x.nums.length>0);
+  const falt=TEAMS.map(t2=>({team:t2,nums:NUMS.filter(n=>data[t2][n]===0)})).filter(x=>x.nums.length>0);
+  let h=`<div class="summary-section-title" style="color:#fb923c">${t('repetidasTitle')}</div>`;
+  if(!rep.length) h+=`<div class="summary-row">${t('noneYet')}</div>`;
   else rep.forEach(({team,nums})=>h+=`<div class="summary-row"><span style="color:#fb923c;font-weight:700">${team}:</span> ${nums.join(', ')}</div>`);
-  h+=`<div class="summary-section-title" style="color:#64748b;margin-top:14px">❌ FALTAN:</div>`;
-  if(!falt.length) h+=`<div class="summary-row" style="color:#22c55e">🎉 ¡Álbum completo!</div>`;
+  h+=`<div class="summary-section-title" style="color:#64748b;margin-top:14px">${t('faltanTitle')}</div>`;
+  if(!falt.length) h+=`<div class="summary-row" style="color:#22c55e">${t('albumComplete')}</div>`;
   else falt.forEach(({team,nums})=>h+=`<div class="summary-row"><span style="color:#64748b;font-weight:700">${team}:</span> ${nums.join(', ')}</div>`);
   document.getElementById('summary-content').innerHTML=h;
 }
 
 function resetAll() {
-  if(!confirm('¿Reiniciar todo el álbum? Se perderá tu progreso.')) return;
+  if(!confirm(t('confirmReset'))) return;
   resetData();
   document.getElementById('cards').innerHTML='';
   renderCards(); updateTopBar();
@@ -581,8 +748,8 @@ function importJSON(e) {
       document.getElementById('cards').innerHTML='';
       renderCards(); updateTopBar();
       if(document.getElementById('summary-panel').classList.contains('visible')) renderSummary();
-      showStatus('✅ Datos importados correctamente');
-    } catch { showStatus('❌ Archivo inválido'); }
+      showStatus(t('statusImported'));
+    } catch { showStatus(t('statusInvalidFile')); }
   };
   reader.readAsText(file);
   e.target.value='';
@@ -601,7 +768,7 @@ function decodeData(str) {
     const [team,nums]=part.split(':');
     if(!team||!nums) return;
     parsed[team]={};
-    [...nums].forEach((c,i)=>parsed[team][i+1]=parseInt(c)||0);
+    [...nums].forEach((c,i)=>{ let v=parseInt(c)||0; if(v===3) v=2; parsed[team][i+1]=v; });
   });
   return parsed;
 }
@@ -609,12 +776,12 @@ function decodeData(str) {
 function copyCode() {
   const code=encodeData();
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(code).then(()=>showStatus('✅ Código copiado — pégalo en WhatsApp o Notas'));
+    navigator.clipboard.writeText(code).then(()=>showStatus(t('statusCopied')));
   } else {
     const ta=document.createElement('textarea');
     ta.value=code; document.body.appendChild(ta); ta.select();
     document.execCommand('copy'); document.body.removeChild(ta);
-    showStatus('✅ Código copiado — pégalo en WhatsApp o Notas');
+    showStatus(t('statusCopied'));
   }
 }
 
@@ -626,7 +793,7 @@ function pasteCode() {
   // Fix URL-encoding added by WhatsApp/messaging apps
   try { str = decodeURIComponent(str); } catch {}
   str = str.replace(/%7C/gi,'|').replace(/%3A/gi,':').replace(/%0A/gi,'').trim();
-  if(!str.trim()){showStatus('❌ Pega un código primero');closeModal();return;}
+  if(!str.trim()){showStatus(t('statusEmptyCode'));closeModal();return;}
   try {
     const parsed=decodeData(str);
     if(!Object.keys(parsed).length) throw new Error();
@@ -634,9 +801,9 @@ function pasteCode() {
     document.getElementById('cards').innerHTML='';
     renderCards(); updateTopBar();
     if(document.getElementById('summary-panel').classList.contains('visible')) renderSummary();
-    showStatus('✅ Progreso restaurado correctamente');
+    showStatus(t('statusRestored'));
     closeModal();
-  } catch { showStatus('❌ Código inválido, verifica que lo copiaste completo'); closeModal(); }
+  } catch { showStatus(t('statusInvalidCode')); closeModal(); }
 }
 
 function showStatus(msg) {
@@ -646,7 +813,7 @@ function showStatus(msg) {
 }
 
 // ── INIT ──────────────────────────────────────────
-loadData(); renderCards(); updateTopBar();
+loadLang(); loadData(); renderCards(); updateTopBar(); applyLang();
 </script>
 </body>
 </html>
